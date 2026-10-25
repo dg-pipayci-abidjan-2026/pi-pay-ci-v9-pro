@@ -12,8 +12,7 @@ Je soussigné DG, résidant à Abidjan, Côte d'Ivoire, déclare être le créat
 **PI-PAY-CI V9 PRO - Première application Pi vers Orange Money, Wave, MTN Money CI**
 
 - **Idée originale :** Convertir Pi Network vers Mobile Money Côte d'Ivoire
-- **Solde Pi :** 337
-- Pi disponibles
+- **Solde Pi :** 337 Pi disponibles
 - **Date de création GitHub :** 25 Octobre 2026
 - **Lancement commercial prévu :** 7 Novembre 2026
 - **Objectif :** 1 an de travail = 1 milliard FCFA
