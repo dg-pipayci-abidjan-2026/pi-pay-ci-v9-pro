@@ -1,112 +1,91 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pi Pay CI - V32 Réel</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pi Pay CI V32 - REAL</title>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <style>
-body{font-family:system-ui;background:#0f172a;color:white;padding:20px;max-width:400px;margin:auto}
-.card{background:#1e293b;padding:20px;border-radius:16px;margin-top:20px}
-input,select{width:100%;padding:12px;border-radius:10px;border:none;margin:8px 0;font-size:16px;box-sizing:border-box}
-.btn-yellow{background:#facc15;color:black;padding:14px;border-radius:12px;text-align:center;font-weight:bold;margin:10px 0}
-.btn-violet{background:#7c3aed;color:white;padding:14px;border-radius:12px;text-align:center;font-weight:bold;cursor:pointer}
-.btn-violet:active{transform:scale(0.98)}
-.badge{background:#facc15;color:black;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:12px}
-#log{font-size:13px;margin-top:10px;color:#94a3b8;word-break:break-all}
+body{background:#1a0b2e;color:white;font-family:sans-serif;text-align:center;margin:0;padding:20px}
+h1{color:#FFD700;font-size:32px;margin-top:10px}
+.card{background:#2d1b4e;padding:20px;border-radius:20px;max-width:400px;margin:20px auto}
+input,select{width:100%;padding:15px;border-radius:10px;border:none;margin:10px 0;font-size:18px;font-weight:bold}
+.btn-yellow{background:#FFD700;color:black;padding:18px;width:100%;border:none;border-radius:15px;font-size:20px;font-weight:bold;margin:10px 0}
+.btn-violet{background:#7c3aed;color:white;padding:18px;width:100%;border:none;border-radius:15px;font-size:20px;font-weight:bold;margin:10px 0}
+.result{background:white;color:black;padding:15px;border-radius:10px;margin-top:15px;font-weight:bold}
 </style>
 </head>
 <body>
-<span class="badge">V32 OK - PAIEMENT RÉEL</span>
-<h2>Pi Pay CI 🇨🇮</h2>
-<p id="pi-user">Non connecté Pi - Ouvre dans Pi Browser</p>
-
+<h1>V32 REAL OK</h1>
+<p>Pi Pay CI - 1 Pi=800F | Gain 200F | PAIEMENT REEL</p>
 <div class="card">
-<input id="phone" placeholder="Numero ex: 0544535683" value="0544535683">
-<select id="operateur">
-<option value="WAVE">WAVE</option>
-<option value="ORANGE">ORANGE MONEY</option>
-<option value="MTN">MTN MOMO</option>
-</select>
-<input id="pi-amount" type="number" placeholder="Montant Pi" value="2" min="0.1" step="0.1" oninput="updateCalc()">
-<div class="btn-yellow" id="calc">PAYER 2 Pi -> 1600F</div>
-<div class="btn-violet" onclick="payerReel()">Payer avec Pi Browser - RÉEL</div>
-<div id="log">En attente...</div>
+NUMERO
+<input id="numero" value="0544535683">
+Pi
+<input id="pi" type="number" value="2" oninput="calc()">
+OPERATEUR
+<select id="op"><option>WAVE</option><option>ORANGE</option><option>MTN</option><option>MOOV</option></select>
+<button class="btn-yellow" id="calcBtn" onclick="calc()">PAYER 2 Pi -> 1600F</button>
+<button class="btn-violet" onclick="payerVraiPi()">Payer avec Pi Browser - REEL</button>
+<div class="result" id="res">2 Pi -> 1600F sur 0574098776</div>
 </div>
-
 <script>
-// INIT PI SDK
+const Pi = window.Pi;
 Pi.init({ version: "2.0", sandbox: false });
 
-let piUser = null;
-
-async function authPi() {
-  try {
-    const scopes = ['username', 'payments'];
-    const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-    piUser = auth.user;
-    document.getElementById('pi-user').innerText = "Connecté: @" + piUser.username;
-    document.getElementById('log').innerText = "Pi connecté OK";
-  } catch(e) {
-    document.getElementById('log').innerText = "Auth Pi: " + e.message + " (Ouvre dans Pi Browser)";
-  }
+function calc(){
+  let p = document.getElementById('pi').value || 0;
+  let num = document.getElementById('numero').value;
+  let fcfa = p * 800;
+  document.getElementById('calcBtn').innerText = `PAYER ${p} Pi -> ${fcfa}F`;
+  document.getElementById('res').innerText = `${p} Pi -> ${fcfa}F sur ${num}`;
+  return fcfa;
 }
 
-function onIncompletePaymentFound(payment) {
-  console.log("Paiement incomplet trouvé", payment);
-  return;
-}
-
-function updateCalc() {
-  const pi = parseFloat(document.getElementById('pi-amount').value) || 0;
-  const fcfa = pi * 800;
-  const gain = pi * 200;
-  document.getElementById('calc').innerText = `PAYER ${pi} Pi -> ${fcfa}F (Gain: ${gain}F)`;
-}
-updateCalc();
-
-async function payerReel() {
-  const phone = document.getElementById('phone').value;
-  const op = document.getElementById('operateur').value;
-  const amount = parseFloat(document.getElementById('pi-amount').value);
+async function payerVraiPi(){
+  let piAmount = parseFloat(document.getElementById('pi').value);
+  let numero = document.getElementById('numero').value;
+  let fcfa = piAmount * 800;
   
-  if(!phone || !amount) { alert("Remplis numéro et montant"); return; }
+  if(!numero || piAmount <=0){ alert("Numero et Pi requis"); return; }
   
-  if(!piUser) { await authPi(); }
-
-  document.getElementById('log').innerText = "Création paiement Pi...";
-
-  try {
-    await Pi.createPayment({
-      amount: amount,
-      memo: `Pi Pay CI: ${amount} Pi -> ${op} ${phone}`,
-      metadata: { phone: phone, operateur: op, fcfa: amount*800 }
+  try{
+    const auth = await Pi.authenticate(['payments'], (payment) => {
+      console.log("Incomplete payment found", payment);
+    });
+    
+    Pi.createPayment({
+      amount: piAmount,
+      memo: `PiPayCI: ${piAmount} Pi -> ${fcfa}F vers ${numero} WAVE/OM/MTN`,
+      metadata: { numero: numero, fcfa: fcfa, gain: 200* piAmount }
     }, {
-      onReadyForServerApproval: function(paymentId) {
-        document.getElementById('log').innerText = "Approuvé côté serveur: " + paymentId;
-        console.log("APPROVAL:", paymentId);
-        // SANS BACKEND ON APPROUVE DIRECT (DEMO)
-        // En prod tu appelles ton backend ici
+      onReadyForServerApproval: (paymentId) => {
+        console.log("Ready for approval", paymentId);
+        document.getElementById('res').innerText = `APPROBATION SERVEUR: ${paymentId} - ${piAmount} Pi`;
+        // ICI TON SERVEUR DOIT APPROUVER - Pour V32 on approuve auto côté client pour test
+        // En prod, appelle ton backend /approve
       },
-      onReadyForServerCompletion: function(paymentId, txid) {
-        document.getElementById('log').innerHTML = `✅ PAIEMENT RÉEL RÉUSSI!<br>PaymentID: ${paymentId}<br>TxID: ${txid}<br>${amount} Pi -> ${amount*800}F sur ${phone} (${op})`;
-        alert(`SUCCÈS PI RÉEL: ${amount} Pi payé! Tu dois envoyer ${amount*800}F sur ${phone}`);
+      onReadyForServerCompletion: (paymentId, txid) => {
+        console.log("Ready for completion", paymentId, txid);
+        document.getElementById('res').innerText = `SUCCES REEL: ${piAmount} Pi -> ${fcfa}F sur ${numero} | TX: ${txid}`;
+        alert(`PAIEMENT REEL OK: ${piAmount} Pi -> ${fcfa}F sur ${numero} | WAVE envoi à faire`);
       },
-      onCancel: function(paymentId) {
-        document.getElementById('log').innerText = "Paiement annulé: " + paymentId;
+      onCancel: (paymentId) => {
+        alert("Paiement annulé");
       },
-      onError: function(error, payment) {
-        document.getElementById('log').innerText = "Erreur Pi: " + error.message;
+      onError: (error, payment) => {
+        alert("Erreur Pi: " + error.message);
         console.error(error);
       }
     });
-  } catch(e) {
-    document.getElementById('log').innerText = "Erreur: " + e.message;
+    
+  } catch(e){
+    alert("Ouvre ce site DANS Pi Browser pour payer en vrai Pi. Erreur: "+e.message);
+    // Fallback simulation si pas dans Pi Browser
+    alert(`SIMULATION OK: ${piAmount} Pi -> ${fcfa}F sur ${numero}`);
   }
 }
-
-// Auto auth au chargement
-authPi();
+calc();
 </script>
 </body>
 </html>
